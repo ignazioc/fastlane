@@ -98,6 +98,29 @@ describe Fastlane do
           expect(ff.runner.current_lane).to eq(:test)
           expect(ff.runner.current_platform).to eq(nil)
         end
+
+        it "Prints a table with a summary of the executed actions" do
+          ff = Fastlane::FastFile.new('./fastlane/spec/fixtures/fastfiles/Fastfile')
+          rows = [
+            [1, "default_platform", 0],
+            [2, "default_platform", 0],
+            [3, "default_platform", 0],
+            [4, "default_platform", 0]
+          ]
+          headings = ["Step", "Action", "Time (in s)"]
+          expect(Terminal::Table).to receive(:new).with(title: "fastlane summary".green,
+                                                     headings: headings,
+                                                         rows: rows)
+          Fastlane::LaneManager.finish_fastlane(ff, 42, nil)
+        end
+
+        it "Skips printing the summary if ENV["FASTLANE_SKIP_SUMMARY"] is set" do
+          ff = Fastlane::FastFile.new('./fastlane/spec/fixtures/fastfiles/Fastfile')
+          expect(Terminal::Table).not_to receive(:new)
+
+          ENV["FASTLANE_SKIP_SUMMARY"] = '1'
+          Fastlane::LaneManager.finish_fastlane(ff, 42, nil)
+        end
       end
     end
   end
